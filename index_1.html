@@ -1,0 +1,929 @@
+<title>Auction.mv</title>
+<meta name="description" content="Prototype of a Maldives auction marketplace for government, business, bank and individual sellers.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F5F2EA; --surface:#FFFFFF; --surface-2:#ECE8DD; --border:#DEDACD;
+    --text:#12262A; --text-muted:#5C6E6C;
+    --accent:#0E7C86; --accent-strong:#075A62; --accent-soft:#E1F1F0;
+    --coral:#D9622F; --coral-strong:#B14E22; --coral-soft:#FBE7DA;
+    --gold:#9A7317; --gold-soft:#F3E7C9;
+    --navy:#1F3A52; --navy-soft:#DCE5EC;
+    --success:#2E7D4F; --success-soft:#DEEEE2;
+    --danger:#B23A2E; --danger-soft:#F7E1DD;
+    --shadow-s:0 1px 2px rgba(16,36,42,.07);
+    --shadow-m:0 10px 30px rgba(16,36,42,.10);
+    --radius-s:9px; --radius-m:14px; --radius-l:22px;
+    --font-display:'Fraunces',Georgia,serif;
+    --font-body:'Manrope',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    --font-mono:'IBM Plex Mono','SFMono-Regular',Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0A1A1C; --surface:#112629; --surface-2:#163034; --border:#213A3D;
+      --text:#E9F2F0; --text-muted:#93ACA9;
+      --accent:#3BC2CC; --accent-strong:#7DE0E7; --accent-soft:#123338;
+      --coral:#FF9569; --coral-strong:#FFB393; --coral-soft:#2B1E17;
+      --gold:#DDB24E; --gold-soft:#2B2413;
+      --navy:#8FADC8; --navy-soft:#182734;
+      --success:#5FCB8E; --success-soft:#123222;
+      --danger:#FF8776; --danger-soft:#331917;
+      --shadow-s:0 1px 2px rgba(0,0,0,.4);
+      --shadow-m:0 12px 32px rgba(0,0,0,.45);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0A1A1C; --surface:#112629; --surface-2:#163034; --border:#213A3D;
+    --text:#E9F2F0; --text-muted:#93ACA9;
+    --accent:#3BC2CC; --accent-strong:#7DE0E7; --accent-soft:#123338;
+    --coral:#FF9569; --coral-strong:#FFB393; --coral-soft:#2B1E17;
+    --gold:#DDB24E; --gold-soft:#2B2413;
+    --navy:#8FADC8; --navy-soft:#182734;
+    --success:#5FCB8E; --success-soft:#123222;
+    --danger:#FF8776; --danger-soft:#331917;
+    --shadow-s:0 1px 2px rgba(0,0,0,.4);
+    --shadow-m:0 12px 32px rgba(0,0,0,.45);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg); color:var(--text); font-family:var(--font-body);
+    padding-inline:0; margin:0; min-height:100%;
+  }
+  h1,h2,h3,.display{font-family:var(--font-display); text-wrap:balance; font-weight:600; margin:0;}
+  .mono{font-family:var(--font-mono); font-variant-numeric:tabular-nums;}
+  a{color:inherit;}
+  button{font-family:inherit;}
+  ::selection{background:var(--accent-soft); color:var(--accent-strong);}
+
+  .wrap{max-width:1120px; margin-inline:auto; padding-inline:20px;}
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    border-bottom:1px solid var(--border); background:var(--surface);
+  }
+  .topbar-inner{
+    display:flex; align-items:center; gap:20px; padding-block:14px; flex-wrap:wrap;
+  }
+  .brand{display:flex; align-items:center; gap:10px; margin-right:auto;}
+  .brand-mark{
+    width:34px; height:34px; border-radius:10px; background:linear-gradient(155deg,var(--accent),var(--accent-strong));
+    display:flex; align-items:center; justify-content:center; color:#fff; flex:none;
+  }
+  .brand-text{display:flex; flex-direction:column; line-height:1.1;}
+  .brand-text .name{font-family:var(--font-display); font-weight:700; font-size:1.18rem;}
+  .brand-text .tag{font-size:.68rem; color:var(--text-muted); letter-spacing:.06em; text-transform:uppercase;}
+  nav.tabs{display:flex; gap:4px; background:var(--surface-2); padding:4px; border-radius:999px;}
+  nav.tabs button{
+    border:none; background:transparent; color:var(--text-muted); padding:8px 16px; border-radius:999px;
+    font-size:.88rem; font-weight:600; cursor:pointer; transition:background .15s,color .15s;
+    display:flex; align-items:center; gap:6px;
+  }
+  nav.tabs button.active{background:var(--surface); color:var(--text); box-shadow:var(--shadow-s);}
+  nav.tabs button:hover:not(.active){color:var(--text);}
+  .icon-btn{
+    border:1px solid var(--border); background:var(--surface); color:var(--text-muted); width:38px; height:38px;
+    border-radius:999px; display:flex; align-items:center; justify-content:center; cursor:pointer; flex:none;
+  }
+  .icon-btn:hover{color:var(--text); border-color:var(--text-muted);}
+  svg.i{width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;}
+  svg.i.filled{fill:currentColor; stroke:none;}
+
+  main{padding-block:28px 64px;}
+  [hidden]{display:none !important;}
+
+  /* ---------- Browse header ---------- */
+  .page-head{display:flex; flex-direction:column; gap:4px; margin-bottom:22px;}
+  .page-head h1{font-size:1.7rem;}
+  .page-head p{color:var(--text-muted); margin:0; font-size:.94rem;}
+
+  .hero{
+    position:relative; overflow:hidden; border-radius:var(--radius-l); color:#fff;
+    padding:38px 28px 54px; margin-bottom:26px; isolation:isolate;
+    background:linear-gradient(125deg,#052A38 0%,#0B6E80 42%,#12A6A0 72%,#3FCFB6 100%);
+    box-shadow:var(--shadow-m);
+  }
+  .hero::before{
+    content:""; position:absolute; width:260px; height:260px; border-radius:50%; right:-70px; top:-110px;
+    background:radial-gradient(circle,rgba(217,98,47,.55) 0%,rgba(217,98,47,.0) 70%); z-index:0;
+  }
+  .hero h1{font-size:2.1rem; color:#fff; position:relative; z-index:1;}
+  .hero p{color:rgba(255,255,255,.86); margin:6px 0 0; font-size:.98rem; max-width:46ch; position:relative; z-index:1;}
+  .hero .wave{position:absolute; left:-10%; width:120%; border-radius:50%; pointer-events:none; z-index:0;}
+  .hero .wave-a{height:90px; bottom:-58px; background:rgba(255,255,255,.10);}
+  .hero .wave-b{height:110px; bottom:-78px; background:rgba(3,20,26,.16);}
+
+  /* ---------- Illustrated category scenes ---------- */
+  .scene-1{background:linear-gradient(155deg,#052F3D 0%,#0E7C90 55%,#4FD7C4 100%);}
+  .scene-2{background:linear-gradient(155deg,#1F0F3D 0%,#5B21B6 55%,#C026D3 100%);}
+  .scene-3{background:linear-gradient(155deg,#101E23 0%,#2E5F63 55%,#82C8C4 100%);}
+  .scene-4{background:linear-gradient(155deg,#3D1E14 0%,#B1502B 55%,#F0A467 100%);}
+  .scene-5{background:linear-gradient(155deg,#0B3B2E 0%,#16795A 55%,#6FE0B3 100%);}
+  .scene-6{background:linear-gradient(155deg,#4A1230 0%,#C4432F 55%,#F2B84B 100%);}
+  .scene-sun{
+    content:""; position:absolute; width:34%; padding-top:34%; border-radius:50%; right:-8%; top:-12%;
+    background:radial-gradient(circle,rgba(255,255,255,.55) 0%,rgba(255,255,255,.14) 55%,transparent 75%);
+    pointer-events:none;
+  }
+  .wave{position:absolute; left:-12%; width:124%; border-radius:50%; pointer-events:none;}
+  .wave-a{height:55%; bottom:-38%; background:rgba(255,255,255,.16);}
+  .wave-b{height:62%; bottom:-49%; background:rgba(4,18,22,.20);}
+
+  .toolbar{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:18px;}
+  .search{
+    flex:1 1 220px; display:flex; align-items:center; gap:8px; background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius-m); padding:9px 14px; box-shadow:var(--shadow-s);
+  }
+  .search input{border:none; outline:none; background:transparent; color:var(--text); font-size:.92rem; width:100%; font-family:inherit;}
+  .search svg{color:var(--text-muted); flex:none;}
+  select.sortsel{
+    border:1px solid var(--border); background:var(--surface); color:var(--text); border-radius:var(--radius-m);
+    padding:9px 12px; font-size:.86rem; font-family:inherit; cursor:pointer;
+  }
+
+  .chiprow{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:22px;}
+  .chip{
+    border:1px solid var(--border); background:var(--surface); color:var(--text-muted); padding:7px 14px;
+    border-radius:999px; font-size:.82rem; font-weight:600; cursor:pointer; white-space:nowrap;
+  }
+  .chip.active{background:var(--accent); border-color:var(--accent); color:#fff;}
+  .chip .count{opacity:.7; font-weight:500;}
+
+  /* ---------- Cards ---------- */
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(252px,1fr)); gap:18px;}
+  .card{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-l); overflow:hidden;
+    display:flex; flex-direction:column; box-shadow:var(--shadow-s); cursor:pointer; transition:transform .15s, box-shadow .15s;
+    position:relative;
+  }
+  .card:hover{transform:translateY(-2px); box-shadow:var(--shadow-m);}
+  .card-media{
+    aspect-ratio:16/10; display:flex; align-items:center; justify-content:center;
+    position:relative; overflow:hidden; color:#fff;
+  }
+  .card-media svg{width:46px; height:46px; stroke-width:1.4; position:relative; z-index:2; filter:drop-shadow(0 2px 6px rgba(0,0,0,.25));}
+  .badge-new{position:absolute; top:10px; left:10px; background:var(--coral); color:#fff; font-size:.68rem; font-weight:700; padding:3px 9px; border-radius:999px; text-transform:uppercase; letter-spacing:.03em;}
+  .watch-btn{
+    position:absolute; top:8px; right:8px; width:32px; height:32px; border-radius:999px; border:none; cursor:pointer;
+    background:rgba(255,255,255,.85); color:var(--coral); display:flex; align-items:center; justify-content:center; backdrop-filter:blur(2px);
+  }
+  :root[data-theme="dark"] .watch-btn{background:rgba(10,20,22,.7);}
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .watch-btn{background:rgba(10,20,22,.7);}}
+  .card-body{padding:14px 16px 16px; display:flex; flex-direction:column; gap:8px; flex:1;}
+  .seller-badge{
+    display:inline-flex; align-items:center; gap:5px; font-size:.68rem; font-weight:700; padding:3px 9px 3px 7px;
+    border-radius:999px; text-transform:uppercase; letter-spacing:.03em; width:fit-content;
+  }
+  .seller-badge svg{width:11px; height:11px;}
+  .seller-badge.government{background:var(--navy-soft); color:var(--navy);}
+  .seller-badge.company{background:var(--accent-soft); color:var(--accent-strong);}
+  .seller-badge.bank{background:var(--gold-soft); color:var(--gold);}
+  .seller-badge.individual{background:var(--coral-soft); color:var(--coral-strong);}
+  .card-title{font-size:1rem; font-weight:700; line-height:1.3;}
+  .card-meta{font-size:.78rem; color:var(--text-muted); display:flex; align-items:center; gap:5px;}
+  .card-foot{display:flex; align-items:flex-end; justify-content:space-between; margin-top:auto; padding-top:8px;}
+  .price-block .label{font-size:.68rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em;}
+  .price-block .amount{font-family:var(--font-mono); font-weight:600; font-size:1.05rem;}
+  .time-block{text-align:right; font-size:.76rem; color:var(--text-muted);}
+  .time-block .t{font-family:var(--font-mono); font-weight:600; color:var(--text);}
+  .time-block.soon .t{color:var(--coral);}
+  .time-block.ended .t{color:var(--danger);}
+  .bidcount{font-size:.72rem; color:var(--text-muted);}
+
+  .empty-state{padding:60px 20px; text-align:center; color:var(--text-muted);}
+  .empty-state svg{width:40px; height:40px; margin-bottom:10px; color:var(--border);}
+
+  /* ---------- Detail ---------- */
+  .back-link{display:inline-flex; align-items:center; gap:6px; color:var(--text-muted); font-size:.86rem; font-weight:600; background:none; border:none; cursor:pointer; padding:0 0 16px; }
+  .back-link:hover{color:var(--text);}
+  .detail-grid{display:grid; grid-template-columns:1.15fr .85fr; gap:32px; align-items:start;}
+  @media (max-width:820px){.detail-grid{grid-template-columns:1fr;}}
+  .detail-media{
+    aspect-ratio:4/3; border-radius:var(--radius-l); position:relative; overflow:hidden;
+    display:flex; align-items:center; justify-content:center; color:#fff; margin-bottom:18px;
+  }
+  .detail-media svg{width:100px; height:100px; stroke-width:1.15; position:relative; z-index:2; filter:drop-shadow(0 3px 10px rgba(0,0,0,.3));}
+  .detail-title{font-size:1.55rem; margin-bottom:6px;}
+  .detail-sub{display:flex; gap:14px; flex-wrap:wrap; color:var(--text-muted); font-size:.88rem; margin-bottom:18px;}
+  .detail-sub span{display:flex; align-items:center; gap:5px;}
+  .detail-sub svg{width:15px; height:15px;}
+  .panel{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-l); padding:20px; box-shadow:var(--shadow-s);}
+  .panel + .panel{margin-top:16px;}
+  .panel h3{font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; color:var(--text-muted); margin-bottom:12px; font-family:var(--font-body); font-weight:700;}
+  .desc-text{font-size:.94rem; line-height:1.65; color:var(--text);}
+  .kv{display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px dashed var(--border); font-size:.88rem;}
+  .kv:last-child{border-bottom:none;}
+  .kv .k{color:var(--text-muted);}
+  .kv .v{font-weight:600;}
+  .disclosure{
+    background:var(--surface-2); border-radius:var(--radius-s); padding:12px 14px; font-size:.82rem; color:var(--text-muted);
+    display:flex; gap:9px; align-items:flex-start; margin-top:10px;
+  }
+  .disclosure svg{flex:none; width:16px; height:16px; margin-top:1px; color:var(--gold);}
+
+  .bid-current{display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:14px;}
+  .bid-current .label{font-size:.72rem; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted);}
+  .bid-current .amount{font-family:var(--font-mono); font-size:1.9rem; font-weight:600; line-height:1;}
+  .bid-current .countdown{text-align:right;}
+  .bid-current .countdown .t{font-family:var(--font-mono); font-weight:700; font-size:1.05rem;}
+  .bid-current .countdown .t.soon{color:var(--coral);}
+  .bid-current .countdown .t.ended{color:var(--danger);}
+  .premium-note{font-size:.76rem; color:var(--text-muted); margin-bottom:14px;}
+  .bidrow{display:flex; gap:8px; margin-bottom:8px;}
+  .bidrow input[type=number]{
+    flex:1; border:1px solid var(--border); border-radius:var(--radius-s); padding:11px 12px; font-size:1rem;
+    font-family:var(--font-mono); background:var(--bg); color:var(--text);
+  }
+  .btn{
+    border:none; border-radius:var(--radius-s); padding:11px 18px; font-weight:700; font-size:.92rem; cursor:pointer;
+    display:inline-flex; align-items:center; justify-content:center; gap:7px; transition:filter .15s, transform .1s;
+  }
+  .btn:active{transform:scale(.98);}
+  .btn-primary{background:var(--coral); color:#fff;}
+  .btn-primary:hover{filter:brightness(1.06);}
+  .btn-primary:disabled{background:var(--border); color:var(--text-muted); cursor:not-allowed;}
+  .btn-ghost{background:var(--surface-2); color:var(--text);}
+  .btn-ghost:hover{filter:brightness(.97);}
+  .btn-outline{background:transparent; border:1.5px solid var(--border); color:var(--text);}
+  .btn-block{width:100%;}
+  .agree-row{display:flex; gap:8px; align-items:flex-start; font-size:.8rem; color:var(--text-muted); margin:12px 0;}
+  .agree-row input{margin-top:3px;}
+  .helper-err{color:var(--danger); font-size:.78rem; min-height:16px; margin:-2px 0 6px;}
+
+  .history-list{display:flex; flex-direction:column; gap:0; max-height:220px; overflow-y:auto;}
+  .history-row{display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--border); font-size:.85rem;}
+  .history-row:last-child{border-bottom:none;}
+  .history-row .who{font-weight:600;}
+  .history-row .amt{font-family:var(--font-mono);}
+  .history-row.you .who{color:var(--accent-strong);}
+
+  /* ---------- Forms (Sell) ---------- */
+  .form-card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-l); padding:26px; box-shadow:var(--shadow-s); max-width:640px;}
+  .field{display:flex; flex-direction:column; gap:6px; margin-bottom:16px;}
+  .field label{font-size:.82rem; font-weight:700;}
+  .field .hint{font-size:.76rem; color:var(--text-muted); font-weight:400;}
+  .field input, .field select, .field textarea{
+    border:1px solid var(--border); border-radius:var(--radius-s); padding:11px 12px; font-size:.92rem;
+    font-family:inherit; background:var(--bg); color:var(--text); width:100%;
+  }
+  .field textarea{resize:vertical; min-height:90px;}
+  .two-col{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  @media (max-width:520px){.two-col{grid-template-columns:1fr;}}
+  .upload-box{
+    border:1.5px dashed var(--border); border-radius:var(--radius-m); padding:22px; text-align:center; color:var(--text-muted);
+    font-size:.84rem; background:var(--surface-2);
+  }
+  .upload-box svg{width:26px; height:26px; margin-bottom:6px; color:var(--text-muted);}
+
+  /* ---------- Dashboard ---------- */
+  .dash-tabs{display:flex; gap:6px; margin-bottom:20px; border-bottom:1px solid var(--border);}
+  .dash-tabs button{
+    background:none; border:none; padding:10px 4px; margin-right:20px; font-weight:700; color:var(--text-muted);
+    cursor:pointer; border-bottom:2px solid transparent; font-size:.92rem;
+  }
+  .dash-tabs button.active{color:var(--text); border-color:var(--coral);}
+  .table{width:100%; border-collapse:collapse; font-size:.88rem;}
+  .table th{text-align:left; font-size:.7rem; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); padding:0 12px 10px; font-weight:700;}
+  .table td{padding:12px; border-top:1px solid var(--border); vertical-align:middle;}
+  .table tr:hover td{background:var(--surface-2);}
+  .row-item{display:flex; align-items:center; gap:10px; cursor:pointer;}
+  .row-icon{width:34px; height:34px; border-radius:8px; background:var(--surface-2); display:flex; align-items:center; justify-content:center; color:var(--accent); flex:none;}
+  .row-icon svg{width:18px; height:18px;}
+  .row-title{font-weight:700;}
+  .status-pill{font-size:.7rem; font-weight:700; padding:3px 9px; border-radius:999px; text-transform:uppercase;}
+  .status-pill.winning{background:var(--success-soft); color:var(--success);}
+  .status-pill.outbid{background:var(--danger-soft); color:var(--danger);}
+  .status-pill.live{background:var(--accent-soft); color:var(--accent-strong);}
+  .status-pill.ended{background:var(--surface-2); color:var(--text-muted);}
+
+  .toast{
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--text); color:var(--bg);
+    padding:12px 20px; border-radius:999px; font-size:.86rem; font-weight:600; box-shadow:var(--shadow-m); z-index:50;
+    display:flex; align-items:center; gap:8px;
+  }
+  :root[data-theme="dark"] .toast{background:var(--accent); color:#06181a;}
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .toast{background:var(--accent); color:#06181a;}}
+
+  @media (prefers-reduced-motion:reduce){*{transition:none !important;}}
+</style>
+
+<!-- icon sprite -->
+<svg style="display:none" aria-hidden="true">
+  <symbol id="ic-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></symbol>
+  <symbol id="ic-heart" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></symbol>
+  <symbol id="ic-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></symbol>
+  <symbol id="ic-map" viewBox="0 0 24 24"><path d="M12 21s7-6.1 7-11.5A7 7 0 0 0 5 9.5C5 14.9 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.4"/></symbol>
+  <symbol id="ic-car" viewBox="0 0 24 24"><path d="M4 16V11l1.8-4.4A2 2 0 0 1 7.6 5.4h8.8a2 2 0 0 1 1.8 1.2L20 11v5"/><rect x="3" y="15" width="18" height="4" rx="1.4"/><circle cx="7.5" cy="19.5" r="1.4"/><circle cx="16.5" cy="19.5" r="1.4"/></symbol>
+  <symbol id="ic-boat" viewBox="0 0 24 24"><path d="M3 15h18l-2.2 4.4a2 2 0 0 1-1.8 1.1H7a2 2 0 0 1-1.8-1.1L3 15Z"/><path d="M6 15V6l6 3 6-3v9"/></symbol>
+  <symbol id="ic-laptop" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="9" rx="1.2"/><path d="M2.5 19h19l-1.6-3H4.1L2.5 19Z"/></symbol>
+  <symbol id="ic-phone" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2"/><line x1="10.5" y1="18" x2="13.5" y2="18"/></symbol>
+  <symbol id="ic-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 3v2.4M12 18.6V21M21 12h-2.4M5.4 12H3M18 6l-1.7 1.7M7.7 16.3 6 18M18 18l-1.7-1.7M7.7 7.7 6 6"/></symbol>
+  <symbol id="ic-sofa" viewBox="0 0 24 24"><path d="M5 12V8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v4"/><path d="M3 12h18v5a1 1 0 0 1-1 1h-1v2h-2v-2H7v2H5v-2H4a1 1 0 0 1-1-1v-5Z"/></symbol>
+  <symbol id="ic-crate" viewBox="0 0 24 24"><path d="M3 7.5 12 3l9 4.5-9 4.5-9-4.5Z"/><path d="M3 7.5V17l9 4.5V12"/><path d="M21 7.5V17l-9 4.5"/></symbol>
+  <symbol id="ic-table" viewBox="0 0 24 24"><path d="M3 8h18M5 8v11M19 8v11M3 8l2-4h14l2 4"/></symbol>
+  <symbol id="ic-shield" viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 4.5-3 7.7-7 9-4-1.3-7-4.5-7-9V6l7-3Z"/></symbol>
+  <symbol id="ic-briefcase" viewBox="0 0 24 24"><rect x="3" y="7.5" width="18" height="12" rx="1.6"/><path d="M8.5 7.5V6a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v1.5"/></symbol>
+  <symbol id="ic-bank" viewBox="0 0 24 24"><path d="M3 10l9-6 9 6"/><path d="M5 10v9M9.5 10v9M14.5 10v9M19 10v9"/><path d="M3 21h18"/></symbol>
+  <symbol id="ic-person" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c1.4-4 4-6 7.5-6s6.1 2 7.5 6"/></symbol>
+  <symbol id="ic-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+  <symbol id="ic-chevron-left" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></symbol>
+  <symbol id="ic-gavel" viewBox="0 0 24 24"><path d="m9 10 6 6M13 6l5 5-2 2-5-5 2-2Z"/><path d="m4 17 5-5 3 3-5 5H4v-3Z"/></symbol>
+  <symbol id="ic-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="11" x2="12" y2="16"/><circle cx="12" cy="7.7" r=".2" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="ic-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2 12h2M20 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></symbol>
+  <symbol id="ic-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z"/></symbol>
+  <symbol id="ic-tag" viewBox="0 0 24 24"><path d="M3 12.5V5a2 2 0 0 1 2-2h7.5L21 10.5l-9.5 9.5L3 12.5Z"/><circle cx="8.2" cy="8.2" r="1.4"/></symbol>
+</svg>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <div class="brand">
+      <div class="brand-mark"><svg class="i" viewBox="0 0 24 24" style="stroke:#fff"><use href="#ic-gavel"/></svg></div>
+      <div class="brand-text">
+        <span class="name">Auction.mv</span>
+        <span class="tag">Maldives asset marketplace &middot; prototype</span>
+      </div>
+    </div>
+    <nav class="tabs" id="nav-tabs">
+      <button data-view="browse" class="active"><svg class="i" viewBox="0 0 24 24"><use href="#ic-search"/></svg>Browse</button>
+      <button data-view="sell"><svg class="i" viewBox="0 0 24 24"><use href="#ic-plus"/></svg>Sell</button>
+      <button data-view="dashboard"><svg class="i" viewBox="0 0 24 24"><use href="#ic-person"/></svg>Dashboard</button>
+    </nav>
+    <button class="icon-btn" id="theme-toggle" title="Toggle theme" aria-label="Toggle color theme">
+      <svg class="i" viewBox="0 0 24 24" id="theme-icon"><use href="#ic-moon"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+  <!-- ============ BROWSE ============ -->
+  <section id="view-browse" class="wrap">
+    <div class="hero">
+      <span class="wave wave-a"></span>
+      <span class="wave wave-b"></span>
+      <h1>Live auctions</h1>
+      <p>Surplus assets and second-hand goods from government, business, bank and individual sellers across the Maldives.</p>
+    </div>
+    <div class="toolbar">
+      <div class="search">
+        <svg class="i" viewBox="0 0 24 24"><use href="#ic-search"/></svg>
+        <input id="search-input" type="search" placeholder="Search listings, e.g. &ldquo;generator&rdquo; or &ldquo;Male&rsquo;&rdquo;" />
+      </div>
+      <select class="sortsel" id="sort-select">
+        <option value="ending">Ending soonest</option>
+        <option value="bids">Most bids</option>
+        <option value="price-low">Price: low to high</option>
+        <option value="price-high">Price: high to low</option>
+      </select>
+    </div>
+    <div class="chiprow" id="category-chips"></div>
+    <div class="chiprow" id="seller-chips"></div>
+    <div class="grid" id="listing-grid"></div>
+    <div class="empty-state" id="empty-state" hidden>
+      <svg class="i" viewBox="0 0 24 24"><use href="#ic-search"/></svg>
+      <div>No listings match those filters yet.</div>
+    </div>
+  </section>
+
+  <!-- ============ DETAIL ============ -->
+  <section id="view-detail" class="wrap" hidden>
+    <button class="back-link" id="back-to-browse"><svg class="i" viewBox="0 0 24 24"><use href="#ic-chevron-left"/></svg>Back to listings</button>
+    <div class="detail-grid" id="detail-content"></div>
+  </section>
+
+  <!-- ============ SELL ============ -->
+  <section id="view-sell" class="wrap">
+    <div class="page-head">
+      <h1>List an item for auction</h1>
+      <p>For this prototype, submitted listings are added to Browse instantly with a 3-day close &mdash; no real payment or verification is processed.</p>
+    </div>
+    <form class="form-card" id="sell-form">
+      <div class="field">
+        <label for="f-title">Item title</label>
+        <input id="f-title" required placeholder="e.g. Toyota Hilux (2018), single cab" />
+      </div>
+      <div class="two-col">
+        <div class="field">
+          <label for="f-category">Category</label>
+          <select id="f-category" required>
+            <option value="">Select category&hellip;</option>
+            <option>Vehicles &amp; Marine</option>
+            <option>Electronics &amp; IT</option>
+            <option>Office &amp; Industrial Equipment</option>
+            <option>Furniture &amp; Fixtures</option>
+            <option>General Surplus</option>
+            <option>Second-hand Goods</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-seller">Selling as</label>
+          <select id="f-seller" required>
+            <option value="">Select seller type&hellip;</option>
+            <option value="government">Government department</option>
+            <option value="company">Company</option>
+            <option value="bank">Bank / financial institution</option>
+            <option value="individual">Individual</option>
+          </select>
+          <span class="hint">Shown to buyers as a verified badge.</span>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="field">
+          <label for="f-condition">Condition</label>
+          <select id="f-condition" required>
+            <option value="">Select condition&hellip;</option>
+            <option>New</option>
+            <option>Used &ndash; Good</option>
+            <option>Used &ndash; Fair</option>
+            <option>For Parts</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-location">Location</label>
+          <select id="f-location" required>
+            <option value="">Select atoll / island&hellip;</option>
+            <option>Male&rsquo; City</option>
+            <option>Hulhumale&rsquo;</option>
+            <option>Addu City</option>
+            <option>Fuvahmulah</option>
+            <option>Kulhudhuffushi, Haa Dhaalu</option>
+            <option>Other atoll</option>
+          </select>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="field">
+          <label for="f-start">Starting bid (MVR)</label>
+          <input id="f-start" type="number" min="1" step="1" required placeholder="e.g. 5000" />
+        </div>
+        <div class="field">
+          <label for="f-buynow">Buy-it-now price (optional, MVR)</label>
+          <input id="f-buynow" type="number" min="1" step="1" placeholder="Leave blank to skip" />
+        </div>
+      </div>
+      <div class="field">
+        <label for="f-desc">Description</label>
+        <textarea id="f-desc" required placeholder="Condition detail, reason for sale, inspection availability&hellip;"></textarea>
+      </div>
+      <div class="field">
+        <label>Photos</label>
+        <div class="upload-box">
+          <svg class="i" viewBox="0 0 24 24" style="display:block;margin-inline:auto"><use href="#ic-crate"/></svg>
+          Photo upload is simulated in this prototype &mdash; a placeholder icon is used instead.
+        </div>
+      </div>
+      <div class="agree-row">
+        <input type="checkbox" id="f-asis" required />
+        <label for="f-asis">I confirm this item will be sold as-is, where-is, with an 8% buyer's premium disclosed to bidders.</label>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block"><svg class="i" viewBox="0 0 24 24"><use href="#ic-gavel"/></svg>Publish listing</button>
+    </form>
+  </section>
+
+  <!-- ============ DASHBOARD ============ -->
+  <section id="view-dashboard" class="wrap" hidden>
+    <div class="page-head">
+      <h1>Your dashboard</h1>
+      <p>Signed in as <strong>You</strong> &middot; demo account</p>
+    </div>
+    <div class="dash-tabs">
+      <button data-dash="watch" class="active">Watchlist &amp; bids</button>
+      <button data-dash="mine">My listings</button>
+    </div>
+    <div id="dash-watch"></div>
+    <div id="dash-mine" hidden></div>
+  </section>
+</main>
+
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------- state & seed data ---------------- */
+  var now = Date.now();
+  var DAY = 86400000, HOUR = 3600000, MIN = 60000;
+
+  var CATS = ["Vehicles & Marine","Electronics & IT","Office & Industrial Equipment","Furniture & Fixtures","General Surplus","Second-hand Goods"];
+  var SELLER_LABEL = {government:"Government", company:"Company", bank:"Bank", individual:"Individual"};
+  var SELLER_ICON = {government:"ic-shield", company:"ic-briefcase", bank:"ic-bank", individual:"ic-person"};
+
+  function sceneClass(cat){
+    var i = CATS.indexOf(cat);
+    return 'scene-' + ((i >= 0 ? i : 0) % 6 + 1);
+  }
+
+  function id(){ return 'L' + Math.random().toString(36).slice(2,9); }
+
+  var listings = [
+    {id:id(), title:"Toyota Hiace Van (2015)", cat:"Vehicles & Marine", icon:"ic-car", seller:"government", sellerName:"Ministry of Health", location:"Male’ City", condition:"Used – Fair", desc:"Ex-fleet ambulance support van, 2015 model, diesel, approx. 118,000km. Retired as part of fleet renewal. Roadworthy; minor bodywork wear. Inspection available at Male’ depot by appointment.", current:145000, incr:2500, buyNow:null, bids:[{who:"Ahmed R.",amt:145000,t:now-20*MIN},{who:"Fathimath S.",amt:141000,t:now-2*HOUR}], ends:now+3*HOUR+22*MIN, watchers:0, mine:false},
+    {id:id(), title:"Dell Latitude Laptops — Lot of 20", cat:"Electronics & IT", icon:"ic-laptop", seller:"bank", sellerName:"Repossession – Partner Bank", location:"Male’ City", condition:"Used – Good", desc:"Lot of 20 Dell Latitude 5420 laptops recovered from a commercial loan default. Wiped and reset to factory settings. Sold as one lot; no individual unit testing performed.", current:38000, incr:1000, buyNow:52000, bids:[{who:"Hassan M.",amt:38000,t:now-40*MIN}], ends:now+1*DAY+4*HOUR, watchers:0, mine:false},
+    {id:id(), title:"Industrial Generator, 100kVA", cat:"Office & Industrial Equipment", icon:"ic-gear", seller:"company", sellerName:"Resort Facilities Ltd.", location:"Addu City", condition:"Used – Good", desc:"Perkins diesel generator, 100kVA, replaced during a resort power-plant upgrade. Serviced quarterly, service log available. Buyer arranges freight from Addu.", current:62000, incr:2000, buyNow:null, bids:[{who:"Ibrahim N.",amt:62000,t:now-3*HOUR},{who:"Aishath H.",amt:60000,t:now-5*HOUR},{who:"Ali W.",amt:57000,t:now-9*HOUR}], ends:now+2*MIN+40000, watchers:0, mine:false},
+    {id:id(), title:"Office Furniture Set — 40 Desks + Chairs", cat:"Furniture & Fixtures", icon:"ic-table", seller:"government", sellerName:"Ministry of Education", location:"Male’ City", condition:"Used – Fair", desc:"40 laminate desks and matching task chairs from a school refurbishment. Sold as a single lot; buyer to arrange pickup and transport.", current:21000, incr:500, buyNow:null, bids:[{who:"Mariyam Z.",amt:21000,t:now-1*HOUR}], ends:now+2*DAY+6*HOUR, watchers:0, mine:false},
+    {id:id(), title:"Decommissioned Server Rack Equipment", cat:"General Surplus", icon:"ic-crate", seller:"company", sellerName:"Dhivehi Telecom Co.", location:"Hulhumale’", condition:"For Parts", desc:"Retired networking cabinet: switches, patch panels and rack rails from a data-centre refresh. Sold for parts/scrap value; not tested for function.", current:8500, incr:250, buyNow:null, bids:[], ends:now+16*HOUR, watchers:0, mine:false},
+    {id:id(), title:"Yamaha-Powered Dhoni Speedboat, 28ft", cat:"Vehicles & Marine", icon:"ic-boat", seller:"individual", sellerName:"Moosa (Kulhudhuffushi)", location:"Kulhudhuffushi, Haa Dhaalu", condition:"Used – Good", desc:"28ft fibreglass dhoni-style speedboat with twin Yamaha outboards, well maintained, used for inter-island transport. Viewing by arrangement in Haa Dhaalu.", current:210000, incr:5000, buyNow:265000, bids:[{who:"Shaziya A.",amt:210000,t:now-6*HOUR},{who:"Waheed I.",amt:205000,t:now-1*DAY}], ends:now+4*DAY, watchers:0, mine:false},
+    {id:id(), title:"iPhone 13 Pro — Repossessed Lot of 15", cat:"Electronics & IT", icon:"ic-phone", seller:"bank", sellerName:"Repossession – Partner Bank", location:"Male’ City", condition:"Used – Good", desc:"15 units, mixed colours and storage sizes, recovered from defaulted consumer financing. iCloud-locked units excluded. Sold as one lot.", current:45000, incr:1500, buyNow:null, bids:[{who:"Zaha F.",amt:45000,t:now-15*MIN},{who:"Nashid A.",amt:43500,t:now-1*HOUR}], ends:now+40*MIN, watchers:0, mine:false},
+    {id:id(), title:"Vintage Teak Dining Set", cat:"Second-hand Goods", icon:"ic-table", seller:"individual", sellerName:"Fathimath (Fuvahmulah)", location:"Fuvahmulah", condition:"Used – Good", desc:"Solid teak 6-seat dining table and chairs, locally made, minor surface wear consistent with age. Buyer collects from Fuvahmulah.", current:6200, incr:200, buyNow:8500, bids:[], ends:now+5*DAY+3*HOUR, watchers:0, mine:false},
+    {id:id(), title:"Filing Cabinets &amp; Safes — Lot of 12", cat:"Office & Industrial Equipment", icon:"ic-crate", seller:"government", sellerName:"Ministry of Finance", location:"Male’ City", condition:"Used – Fair", desc:"12 steel filing cabinets and 2 small office safes (keys included) retired during office relocation. Inspection at Male’ storage facility by appointment.", current:9800, incr:300, buyNow:null, bids:[{who:"Ahmed R.",amt:9800,t:now-2*HOUR}], ends:now+1*DAY+12*HOUR, watchers:0, mine:false},
+    {id:id(), title:"Commercial Kitchen Equipment Bundle", cat:"General Surplus", icon:"ic-gear", seller:"company", sellerName:"Ocean View Resorts Pvt Ltd", location:"Addu City", condition:"Used – Good", desc:"Combi oven, two chest freezers and prep tables from a kitchen refit. Sold as one bundle; buyer arranges freight from Addu.", current:31000, incr:1000, buyNow:null, bids:[{who:"Hussain L.",amt:31000,t:now-8*HOUR}], ends:now+3*DAY+2*HOUR, watchers:0, mine:false}
+  ];
+
+  var watchlist = {};   // id -> true
+  var myBids = {};      // id -> my highest bid amount
+  var state = {view:"browse", category:"all", seller:"all", search:"", sort:"ending", currentId:null, dashTab:"watch"};
+
+  var PREMIUM = 0.08;
+
+  /* ---------------- helpers ---------------- */
+  function fmtMVR(n){ return "MVR " + Math.round(n).toLocaleString("en-US"); }
+  function esc(s){ return String(s).replace(/&(?!amp;|rsquo;|mdash;|ndash;|hellip;)/g,"&amp;"); }
+
+  function timeLeft(ms){
+    var d = ms - Date.now();
+    if(d <= 0) return {text:"Ended", soon:false, ended:true};
+    var days = Math.floor(d/DAY), hrs = Math.floor((d%DAY)/HOUR), mins = Math.floor((d%HOUR)/MIN), secs = Math.floor((d%MIN)/1000);
+    var soon = d < HOUR;
+    var text;
+    if(days > 0) text = days + "d " + hrs + "h";
+    else if(hrs > 0) text = hrs + "h " + mins + "m";
+    else text = mins + "m " + (secs<10?"0":"") + secs + "s";
+    return {text:text, soon:soon, ended:false};
+  }
+
+  function toast(msg){
+    var t = document.getElementById("toast");
+    t.textContent = msg;
+    t.hidden = false;
+    clearTimeout(toast._h);
+    toast._h = setTimeout(function(){ t.hidden = true; }, 3200);
+  }
+
+  function sellerBadge(type){
+    return '<span class="seller-badge '+type+'"><svg class="i" viewBox="0 0 24 24"><use href="#'+SELLER_ICON[type]+'"/></svg>'+SELLER_LABEL[type]+'</span>';
+  }
+
+  function getListing(lid){ for(var i=0;i<listings.length;i++) if(listings[i].id===lid) return listings[i]; return null; }
+
+  /* ---------------- view switching ---------------- */
+  function setView(v){
+    state.view = v;
+    ["browse","sell","dashboard","detail"].forEach(function(name){
+      document.getElementById("view-"+name).hidden = (name !== v);
+    });
+    document.querySelectorAll("#nav-tabs button").forEach(function(b){
+      b.classList.toggle("active", b.dataset.view === v || (v==="detail" && b.dataset.view==="browse"));
+    });
+    window.scrollTo({top:0, behavior:"instant"});
+  }
+
+  document.getElementById("nav-tabs").addEventListener("click", function(e){
+    var b = e.target.closest("button[data-view]");
+    if(!b) return;
+    setView(b.dataset.view);
+    if(b.dataset.view === "dashboard") renderDashboard();
+  });
+  document.getElementById("back-to-browse").addEventListener("click", function(){ setView("browse"); });
+
+  /* ---------------- theme toggle ---------------- */
+  (function(){
+    var root = document.documentElement;
+    var iconUse = document.querySelector("#theme-icon use");
+    var saved = null;
+    try{ saved = localStorage.getItem("auctionmv-theme"); }catch(e){}
+    if(saved){ root.setAttribute("data-theme", saved); }
+    function sync(){
+      var isDark = root.getAttribute("data-theme") === "dark" ||
+        (!root.getAttribute("data-theme") && window.matchMedia("(prefers-color-scheme: dark)").matches);
+      iconUse.setAttribute("href", isDark ? "#ic-sun" : "#ic-moon");
+    }
+    sync();
+    document.getElementById("theme-toggle").addEventListener("click", function(){
+      var cur = root.getAttribute("data-theme");
+      var isDark = cur === "dark" || (!cur && window.matchMedia("(prefers-color-scheme: dark)").matches);
+      var next = isDark ? "light" : "dark";
+      root.setAttribute("data-theme", next);
+      try{ localStorage.setItem("auctionmv-theme", next); }catch(e){}
+      sync();
+    });
+  })();
+
+  /* ---------------- browse rendering ---------------- */
+  function buildChips(){
+    var catWrap = document.getElementById("category-chips");
+    var chips = ['<button class="chip active" data-cat="all">All categories</button>']
+      .concat(CATS.map(function(c){ return '<button class="chip" data-cat="'+c+'">'+c+'</button>'; }));
+    catWrap.innerHTML = chips.join("");
+    catWrap.addEventListener("click", function(e){
+      var b = e.target.closest(".chip"); if(!b) return;
+      state.category = b.dataset.cat;
+      catWrap.querySelectorAll(".chip").forEach(function(c){ c.classList.toggle("active", c===b); });
+      renderGrid();
+    });
+
+    var sellWrap = document.getElementById("seller-chips");
+    var stypes = ["all","government","company","bank","individual"];
+    sellWrap.innerHTML = stypes.map(function(s){
+      var label = s==="all" ? "All sellers" : SELLER_LABEL[s]+" sellers";
+      return '<button class="chip" data-seller="'+s+'">'+label+'</button>';
+    }).join("");
+    sellWrap.querySelector('[data-seller="all"]').classList.add("active");
+    sellWrap.addEventListener("click", function(e){
+      var b = e.target.closest(".chip"); if(!b) return;
+      state.seller = b.dataset.seller;
+      sellWrap.querySelectorAll(".chip").forEach(function(c){ c.classList.toggle("active", c===b); });
+      renderGrid();
+    });
+  }
+
+  function filteredSorted(){
+    var q = state.search.trim().toLowerCase();
+    var out = listings.filter(function(l){
+      if(state.category !== "all" && l.cat !== state.category) return false;
+      if(state.seller !== "all" && l.seller !== state.seller) return false;
+      if(q && (l.title.toLowerCase().indexOf(q)===-1 && l.location.toLowerCase().indexOf(q)===-1 && l.cat.toLowerCase().indexOf(q)===-1)) return false;
+      return true;
+    });
+    out.sort(function(a,b){
+      switch(state.sort){
+        case "bids": return b.bids.length - a.bids.length;
+        case "price-low": return a.current - b.current;
+        case "price-high": return b.current - a.current;
+        default: return a.ends - b.ends;
+      }
+    });
+    return out;
+  }
+
+  function cardHTML(l){
+    var tl = timeLeft(l.ends);
+    var watched = !!watchlist[l.id];
+    return (
+      '<article class="card" data-id="'+l.id+'">'+
+        '<div class="card-media '+sceneClass(l.cat)+'">'+
+          '<span class="scene-sun"></span><span class="wave wave-a"></span><span class="wave wave-b"></span>'+
+          (l.createdAt ? '<span class="badge-new">New</span>' : '') +
+          '<button class="watch-btn" data-watch="'+l.id+'" aria-label="Watch listing"><svg class="i'+(watched?' filled':'')+'" viewBox="0 0 24 24"><use href="#ic-heart"/></svg></button>'+
+          '<svg class="i" viewBox="0 0 24 24"><use href="#'+l.icon+'"/></svg>'+
+        '</div>'+
+        '<div class="card-body">'+
+          sellerBadge(l.seller)+
+          '<div class="card-title">'+esc(l.title)+'</div>'+
+          '<div class="card-meta"><svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px"><use href="#ic-map"/></svg>'+esc(l.location)+' &middot; '+esc(l.cat)+'</div>'+
+          '<div class="card-foot">'+
+            '<div class="price-block"><div class="label">Current bid</div><div class="amount mono">'+fmtMVR(l.current)+'</div><div class="bidcount">'+l.bids.length+' bid'+(l.bids.length===1?'':'s')+'</div></div>'+
+            '<div class="time-block'+(tl.soon?' soon':'')+(tl.ended?' ended':'')+'"><svg class="i" viewBox="0 0 24 24" style="width:12px;height:12px;vertical-align:-1px"><use href="#ic-clock"/></svg> <span class="t" data-timer="'+l.id+'">'+tl.text+'</span></div>'+
+          '</div>'+
+        '</div>'+
+      '</article>'
+    );
+  }
+  function renderGrid(){
+    var grid = document.getElementById("listing-grid");
+    var items = filteredSorted();
+    document.getElementById("empty-state").hidden = items.length > 0;
+    grid.innerHTML = items.map(cardHTML).join("");
+  }
+
+  document.getElementById("listing-grid").addEventListener("click", function(e){
+    var wb = e.target.closest("[data-watch]");
+    if(wb){
+      e.stopPropagation();
+      var lid = wb.dataset.watch;
+      watchlist[lid] = !watchlist[lid];
+      wb.querySelector("svg").classList.toggle("filled", !!watchlist[lid]);
+      toast(watchlist[lid] ? "Added to your watchlist" : "Removed from watchlist");
+      return;
+    }
+    var card = e.target.closest(".card");
+    if(card){ openDetail(card.dataset.id); }
+  });
+
+  document.getElementById("search-input").addEventListener("input", function(e){
+    state.search = e.target.value; renderGrid();
+  });
+  document.getElementById("sort-select").addEventListener("change", function(e){
+    state.sort = e.target.value; renderGrid();
+  });
+
+  /* ---------------- detail rendering ---------------- */
+  function openDetail(lid){
+    state.currentId = lid;
+    renderDetail();
+    setView("detail");
+  }
+
+  function renderDetail(){
+    var l = getListing(state.currentId);
+    if(!l){ setView("browse"); return; }
+    var tl = timeLeft(l.ends);
+    var watched = !!watchlist[l.id];
+    var premium = l.current * PREMIUM;
+    var minNext = l.current + l.incr;
+
+    var historyHTML = l.bids.length ? l.bids.slice().sort(function(a,b){return b.t-a.t;}).map(function(b){
+      return '<div class="history-row'+(b.who==="You"?" you":"")+'"><span class="who">'+esc(b.who)+'</span><span class="amt">'+fmtMVR(b.amt)+'</span></div>';
+    }).join("") : '<div style="color:var(--text-muted);font-size:.85rem;padding:8px 0;">No bids yet &mdash; be the first.</div>';
+
+    var html =
+      '<div>'+
+        '<div class="detail-media '+sceneClass(l.cat)+'"><span class="scene-sun"></span><span class="wave wave-a"></span><span class="wave wave-b"></span><svg class="i" viewBox="0 0 24 24"><use href="#'+l.icon+'"/></svg></div>'+
+        sellerBadge(l.seller)+
+        '<h2 class="detail-title" style="margin-top:8px">'+esc(l.title)+'</h2>'+
+        '<div class="detail-sub">'+
+          '<span><svg class="i" viewBox="0 0 24 24"><use href="#ic-map"/></svg>'+esc(l.location)+'</span>'+
+          '<span><svg class="i" viewBox="0 0 24 24"><use href="#ic-tag"/></svg>'+esc(l.cat)+'</span>'+
+          '<span>Condition: '+esc(l.condition)+'</span>'+
+          '<span>Sold by '+esc(l.sellerName)+'</span>'+
+        '</div>'+
+        '<div class="panel"><h3>Description</h3><p class="desc-text">'+esc(l.desc)+'</p>'+
+          '<div class="disclosure"><svg class="i" viewBox="0 0 24 24"><use href="#ic-info"/></svg><span>Sold as-is, where-is, with no warranty. Buyers are encouraged to inspect before bidding; see pickup details after auction close.</span></div>'+
+        '</div>'+
+        '<div class="panel"><h3>Bid history</h3><div class="history-list">'+historyHTML+'</div></div>'+
+      '</div>'+
+      '<div>'+
+        '<div class="panel">'+
+          '<div class="bid-current">'+
+            '<div><div class="label">Current bid</div><div class="amount">'+fmtMVR(l.current)+'</div></div>'+
+            '<div class="countdown"><div class="label">Time left</div><div class="t'+(tl.soon?" soon":"")+(tl.ended?" ended":"")+'" data-timer-big="'+l.id+'">'+tl.text+'</div></div>'+
+          '</div>'+
+          '<div class="premium-note">Plus an 8% buyer’s premium at close (est. '+fmtMVR(premium)+' on the current bid). Minimum next bid: '+fmtMVR(minNext)+'.</div>'+
+          (tl.ended ?
+            '<button class="btn btn-ghost btn-block" disabled>Auction ended</button>' :
+            '<form id="bid-form">'+
+              '<div class="bidrow"><input type="number" id="bid-amount" min="'+minNext+'" step="1" value="'+minNext+'" /><button type="submit" class="btn btn-primary"><svg class="i" viewBox="0 0 24 24"><use href="#ic-gavel"/></svg>Place bid</button></div>'+
+              '<div class="helper-err" id="bid-error"></div>'+
+              (l.buyNow ? '<button type="button" class="btn btn-outline btn-block" id="buy-now-btn" style="margin-bottom:8px">Buy it now &mdash; '+fmtMVR(l.buyNow)+'</button>' : '')+
+              '<div class="agree-row"><input type="checkbox" id="bid-agree" /><label for="bid-agree">I accept this item is sold as-is, where-is.</label></div>'+
+            '</form>'
+          )+
+          '<button class="btn btn-ghost btn-block" id="watch-detail-btn" style="margin-top:6px">'+
+            '<svg class="i'+(watched?' filled':'')+'" viewBox="0 0 24 24"><use href="#ic-heart"/></svg> '+(watched?"Watching this item":"Add to watchlist")+
+          '</button>'+
+        '</div>'+
+        '<div class="panel">'+
+          '<h3>Seller</h3>'+
+          '<div class="kv"><span class="k">Verified as</span><span class="v">'+SELLER_LABEL[l.seller]+'</span></div>'+
+          '<div class="kv"><span class="k">Seller name</span><span class="v">'+esc(l.sellerName)+'</span></div>'+
+          '<div class="kv"><span class="k">Location</span><span class="v">'+esc(l.location)+'</span></div>'+
+        '</div>'+
+      '</div>';
+
+    document.getElementById("detail-content").innerHTML = html;
+
+    var form = document.getElementById("bid-form");
+    if(form){
+      form.addEventListener("submit", function(e){
+        e.preventDefault();
+        var amtInput = document.getElementById("bid-amount");
+        var agree = document.getElementById("bid-agree");
+        var err = document.getElementById("bid-error");
+        var amt = parseFloat(amtInput.value);
+        if(!agree.checked){ err.textContent = "Please accept the as-is terms to bid."; return; }
+        if(isNaN(amt) || amt < l.current + l.incr){ err.textContent = "Minimum bid is "+fmtMVR(l.current + l.incr)+"."; return; }
+        err.textContent = "";
+        placeBid(l, amt);
+      });
+    }
+    var buyNowBtn = document.getElementById("buy-now-btn");
+    if(buyNowBtn){
+      buyNowBtn.addEventListener("click", function(){
+        l.current = l.buyNow;
+        l.bids.unshift({who:"You", amt:l.buyNow, t:Date.now()});
+        l.ends = Date.now() - 1000;
+        myBids[l.id] = l.buyNow;
+        toast("Purchased at "+fmtMVR(l.buyNow)+" — auction closed.");
+        renderDetail();
+      });
+    }
+    document.getElementById("watch-detail-btn").addEventListener("click", function(){
+      watchlist[l.id] = !watchlist[l.id];
+      renderDetail();
+      toast(watchlist[l.id] ? "Added to your watchlist" : "Removed from watchlist");
+    });
+  }
+
+  function placeBid(l, amt){
+    var extended = false;
+    if(l.ends - Date.now() < 3*MIN){ l.ends = Date.now() + 3*MIN; extended = true; }
+    l.bids.unshift({who:"You", amt:amt, t:Date.now()});
+    l.current = amt;
+    myBids[l.id] = amt;
+    renderDetail();
+    toast(extended ? "Bid placed — auction extended +3 min to prevent sniping." : "Bid placed at "+fmtMVR(amt)+".");
+  }
+
+  /* ---------------- sell form ---------------- */
+  document.getElementById("sell-form").addEventListener("submit", function(e){
+    e.preventDefault();
+    var title = document.getElementById("f-title").value.trim();
+    var cat = document.getElementById("f-category").value;
+    var seller = document.getElementById("f-seller").value;
+    var condition = document.getElementById("f-condition").value;
+    var location = document.getElementById("f-location").value;
+    var start = parseFloat(document.getElementById("f-start").value);
+    var buyNow = document.getElementById("f-buynow").value ? parseFloat(document.getElementById("f-buynow").value) : null;
+    var desc = document.getElementById("f-desc").value.trim();
+    if(!title || !cat || !seller || !condition || !location || !desc || isNaN(start)) return;
+
+    var iconMap = {"Vehicles & Marine":"ic-car","Electronics & IT":"ic-laptop","Office & Industrial Equipment":"ic-gear","Furniture & Fixtures":"ic-sofa","General Surplus":"ic-crate","Second-hand Goods":"ic-tag"};
+    var incr = Math.max(50, Math.round(start*0.03/50)*50);
+    var newListing = {
+      id:id(), title:title, cat:cat, icon:iconMap[cat]||"ic-crate", seller:seller, sellerName:"You",
+      location:location, condition:condition, desc:desc, current:start, incr:incr, buyNow:buyNow,
+      bids:[], ends: Date.now() + 3*DAY, watchers:0, mine:true, createdAt: Date.now()
+    };
+    listings.unshift(newListing);
+    e.target.reset();
+    toast("Listing published — live for 3 days.");
+    setView("browse");
+    state.category = "all"; state.seller = "all";
+    document.querySelectorAll("#category-chips .chip").forEach(function(c){ c.classList.toggle("active", c.dataset.cat==="all"); });
+    document.querySelectorAll("#seller-chips .chip").forEach(function(c){ c.classList.toggle("active", c.dataset.seller==="all"); });
+    renderGrid();
+  });
+
+  /* ---------------- dashboard ---------------- */
+  document.querySelector(".dash-tabs").addEventListener("click", function(e){
+    var b = e.target.closest("button[data-dash]"); if(!b) return;
+    state.dashTab = b.dataset.dash;
+    document.querySelectorAll(".dash-tabs button").forEach(function(x){ x.classList.toggle("active", x===b); });
+    document.getElementById("dash-watch").hidden = state.dashTab !== "watch";
+    document.getElementById("dash-mine").hidden = state.dashTab !== "mine";
+  });
+
+  function dashRow(l, statusOverride){
+    var tl = timeLeft(l.ends);
+    var myAmt = myBids[l.id];
+    var status = statusOverride;
+    if(!status){
+      if(tl.ended) status = "ended";
+      else if(myAmt && myAmt >= l.current) status = "winning";
+      else if(myAmt) status = "outbid";
+      else status = "live";
+    }
+    var statusLabel = {winning:"Winning", outbid:"Outbid", live:"Live", ended:"Ended"}[status];
+    return (
+      '<tr data-id="'+l.id+'">'+
+        '<td><div class="row-item"><div class="row-icon"><svg class="i" viewBox="0 0 24 24"><use href="#'+l.icon+'"/></svg></div>'+
+          '<div><div class="row-title">'+esc(l.title)+'</div><div class="card-meta">'+esc(l.location)+'</div></div></div></td>'+
+        '<td class="mono">'+fmtMVR(l.current)+'</td>'+
+        '<td>'+(myAmt ? '<span class="mono">'+fmtMVR(myAmt)+'</span>' : '&mdash;')+'</td>'+
+        '<td><span class="mono">'+tl.text+'</span></td>'+
+        '<td><span class="status-pill '+status+'">'+statusLabel+'</span></td>'+
+      '</tr>'
+    );
+  }
+
+  function renderDashboard(){
+    var watched = listings.filter(function(l){ return watchlist[l.id] || myBids[l.id]; });
+    var mine = listings.filter(function(l){ return l.mine; });
+
+    var watchHTML = watched.length ?
+      '<table class="table"><thead><tr><th>Item</th><th>Current bid</th><th>Your bid</th><th>Time left</th><th>Status</th></tr></thead><tbody>'+
+      watched.map(function(l){ return dashRow(l); }).join("")+'</tbody></table>' :
+      '<div class="empty-state"><svg class="i" viewBox="0 0 24 24"><use href="#ic-heart"/></svg><div>Nothing watched yet &mdash; browse listings and tap the heart icon to track them here.</div></div>';
+
+    var mineHTML = mine.length ?
+      '<table class="table"><thead><tr><th>Item</th><th>Current bid</th><th></th><th>Time left</th><th>Status</th></tr></thead><tbody>'+
+      mine.map(function(l){ return dashRow(l, null); }).join("")+'</tbody></table>' :
+      '<div class="empty-state"><svg class="i" viewBox="0 0 24 24"><use href="#ic-tag"/></svg><div>You haven’t published any listings yet. Try the Sell tab.</div></div>';
+
+    document.getElementById("dash-watch").innerHTML = watchHTML;
+    document.getElementById("dash-mine").innerHTML = mineHTML;
+    document.querySelectorAll("#dash-watch tr[data-id], #dash-mine tr[data-id]").forEach(function(row){
+      row.style.cursor = "pointer";
+      row.addEventListener("click", function(){ openDetail(row.dataset.id); });
+    });
+  }
+
+  /* ---------------- ticking timers ---------------- */
+  setInterval(function(){
+    document.querySelectorAll("[data-timer]").forEach(function(el){
+      var l = getListing(el.dataset.timer);
+      if(!l) return;
+      var tl = timeLeft(l.ends);
+      el.textContent = tl.text;
+      el.closest(".time-block").classList.toggle("soon", tl.soon);
+      el.closest(".time-block").classList.toggle("ended", tl.ended);
+    });
+    var big = document.querySelector("[data-timer-big]");
+    if(big){
+      var l2 = getListing(big.dataset.timerBig);
+      if(l2){
+        var tl2 = timeLeft(l2.ends);
+        big.textContent = tl2.text;
+        big.classList.toggle("soon", tl2.soon);
+        big.classList.toggle("ended", tl2.ended);
+      }
+    }
+  }, 1000);
+
+  /* ---------------- init ---------------- */
+  buildChips();
+  renderGrid();
+  setView("browse");
+
+})();
+</script>
